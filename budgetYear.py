@@ -1,49 +1,72 @@
-import calendar
+import os
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 
 class BudgetYear:
-    # We want each BudgetYear object to have parameters like yearly sum of spending. And each BudgetYear object will
-    # have 12 BudgetMonth objects in a list. One for each month of the year and those objects will have parameters of sums,
-    # and then we can override the BudgetYear methods with sum from the beginning of the year to the end of that month,
-    # and the average will also be the beginning of the year to the end of that month.
+    SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
     SPREADSHEET_ID = "1L4yjLKLaMQQokcvFhDzepPWEyGQhhnxnpq7VgPZB0bc"
-    def __init__(self, year):
-        self.sum = 0
-        self.year = year
-        self.months = [BudgetMonth(month_name) for month_name in calendar.month_name[1:13]]
 
-    def get_sum(self):
-        for month in self.months:
-            self.sum = month.get_sum()
-        return self.sum
+    def __init__(self):
+        credentials = None
+        if os.path.exists("token.json"):
+            credentials = Credentials.from_authorized_user_file("token.json", self.SCOPES)
+        if not credentials or not credentials.valid:
+            if credentials and credentials.expired and credentials.refresh_token:
+                credentials.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file("credentials.json", self.SCOPES)
+                credentials = flow.run_local_server(port=0)
+            with open("token.json", "w") as token:
+                token.write(credentials.to_json())
+
+        self.service = service = build("sheets", "v4", credentials=credentials)
+        self.sheet = self.service.spreadsheets()
+        self.values_of_first_row = self.sheet.values().get(spreadsheetId= self.SPREADSHEET_ID, range="1:1"
+                                                      ).execute().get('values', [])
+        self.columnInUse = chr(ord("A") + len(self.values_of_first_row[0]) - 2)
+        self.values_for_column_in_use = self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID,
+                                                range=f"{self.columnInUse}:{self.columnInUse}").execute().get('values',
+                                                                                                              [])
+        self.rowInColumnInUse = len(self.values_for_column_in_use) + 1
+        self.cellInUse = f"{self.columnInUse}{self.rowInColumnInUse}"
 
 
+    def get_values(self, cell_range):
+        return self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range=cell_range
+                                         ).execute().get("values", [])
 
-class BudgetMonth:
-    SPREADSHEET_ID = "1L4yjLKLaMQQokcvFhDzepPWEyGQhhnxnpq7VgPZB0bc"
-    def __init__(self, month):
-        self.month = month
-        self.sum = sum(self.expense)
-        self.expense = []
+    def while_Loop(self):
+        while (choice := input("Type \"get\" or \"enter\" or \"exit\" to get info, enter info, or exit.")) != "exit":
 
-    def get_sum(self):
-        return self.sum
+            if choice == "get":
+                inputrange = input("Enter in cell that you want to see or cell range.")
 
-    def get_month(self):
-        return self.month
+                try:
+                    result = self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range=inputrange).execute()
+                    print("Printing result", result)
+                    values = result.get("values", [])
 
-    def print_expenses(self):
-        nextline = 0
-        for i in self.expense:
-            print(i + " ")
-            nextline += 1
-            if nextline % 3 == 0:
-                print("\n")
+                    for row in values:
+                        print(row)
 
-    def add_expense(self, expense):
-        self.expense.append(expense)
-        self.sum = sum(self.expense)
+                except HttpError as error:
+                    print(error)
 
-        # We want a data field to be a sum value, we want there to be expenses assigned to the month. Later we want each
-        # month to its own column in a Google sheets which I believe can be referred with the Google api and some array
-        # or list.
+            if choice == "enter":
+                try:
+
+                    self.sheet.values().update(spreadsheetId=self.SPREADSHEET_ID, range="sheet1!" + f"{self.cellInUse}",
+                                           valueInputOption="USER_ENTERED",
+                                           body={"values": [[input("enter expense")]]}).execute()
+
+                except HttpError as error:
+                    print(error)
+
+
+object1 = BudgetYear()
+object1.while_Loop()
+

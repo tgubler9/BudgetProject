@@ -27,7 +27,7 @@ def main():
         service = build("sheets", "v4", credentials=credentials)
         sheets = service.spreadsheets()
 
-        result = sheets.values().get(spreadsheetId=SPREADSHEET_ID, range="Sheet1!A1:A38").execute()
+        result = sheets.values().get(spreadsheetId=SPREADSHEET_ID, range="Sheet1!A:A").execute()
 
         values = result.get("values", [])
 
@@ -36,7 +36,9 @@ def main():
 
     except HttpError as error:
         print(error)
+    print(f"SCOPES: {SCOPES}")
+    print(f"SPREADSHEET_ID: {SPREADSHEET_ID}")
+    print(f"Credentials: {credentials}")
 
-
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+main()
