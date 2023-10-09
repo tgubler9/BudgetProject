@@ -43,6 +43,7 @@ class BudgetYear:
 
 
     def get_values(self, cell_range):
+        """ This is a getter method used to grab data from the google sheets."""
         return self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range=cell_range
                                          ).execute().get("values", [])
 
@@ -50,13 +51,14 @@ class BudgetYear:
     # the program with this as well.
 
     def while_loop(self):
+        """ You can enter or see data in from the google sheets with the range. You can exit the loop by typing exit"""
         while (choice := input("Type \"get\" or \"enter\" or \"exit\" to get info, enter info, or exit.")) != "exit":
 
             if choice == "get":
                 inputrange = input("Enter in cell that you want to see or cell range.")
 
                 try:
-                    result = self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range=inputrange).execute()
+                    result = self.get_values(inputrange)
                     print("Printing result:\n", result)
                     values = result.get("values", [])
 
@@ -86,6 +88,8 @@ class BudgetYear:
                 break
 
     def screenshot(self):
+        """This method creates a graph from the given data in the google API, takes a picture of it, and then
+        sets that picture as my background."""
         month = self.values_for_column_in_use[0][0]
         list_of_expenses = [float(item[0]) for item in self.values_for_column_in_use[1:]]
         cumulative_sums = np.cumsum((list_of_expenses))
@@ -127,7 +131,7 @@ class BudgetYear:
                                                     screen_resolutions)
 
         SPI_SETDESKWALLPAPER = 20
-        ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, image_path, 0)
+        ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, image_path, 3)
 
 
 def create_multi_monitor_wallpaper(center_image_path, screen_resolutions):
@@ -149,7 +153,7 @@ def create_multi_monitor_wallpaper(center_image_path, screen_resolutions):
 
     # Calculate starting position for the center image
     left_width = screen_resolutions[0][0]
-    start_x = left_width +10
+    start_x = left_width + 10
     start_y = 0
 
     # Paste the center image onto the blank image
@@ -162,6 +166,7 @@ def create_multi_monitor_wallpaper(center_image_path, screen_resolutions):
 
 
 def resize_image_to_fit_screen(image_path, screen_width, screen_height):
+    """Resizes the Png file in the screenshot method to fit my screen."""
     with Image.open(image_path) as img:
         # Calculate aspect ratios
         screen_aspect_ratio = screen_width / screen_height
