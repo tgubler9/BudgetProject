@@ -1,6 +1,5 @@
 import os
 import time
-
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -19,6 +18,9 @@ def main():
 
     print(len(objectj.values_for_column_in_use))
     objectj.while_loop()
+    objectj.screenshot()
+    input()
+    objectj = budgetYear.BudgetYear()
     objectj.screenshot()
 
 

@@ -1,5 +1,4 @@
 import os
-
 import matplotlib.pyplot as plt
 import numpy as np
 from google.auth.transport.requests import Request
@@ -44,11 +43,26 @@ class BudgetYear:
 
     def get_values(self, cell_range):
         """ This is a getter method used to grab data from the google sheets."""
-        return self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range=cell_range
-                                         ).execute().get("values", [])
+        self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range=cell_range).execute().get("values", [])
 
     #This is a main loop for the program. It will allow you to enter or get info from the google sheets. You can also
     # the program with this as well.
+
+    def send_value(self, amount):
+        try:
+
+            self.sheet.values().update(spreadsheetId=self.SPREADSHEET_ID, range="sheet1!" + f"{self.cellInUse}",
+                                       valueInputOption="USER_ENTERED",
+                                       body={"values": [[amount]]}).execute()
+            self.values_for_column_in_use = \
+                self.sheet.values().get(
+                    spreadsheetId=self.SPREADSHEET_ID,
+                    range=f"{self.columnInUse}:{self.columnInUse}").execute().get('values', [])
+            self.rowInColumnInUse += 1
+            self.cellInUse = f"{self.columnInUse}{self.rowInColumnInUse}"
+
+        except HttpError as error:
+            print(error)
 
     def while_loop(self):
         """ You can enter or see data in from the google sheets with the range. You can exit the loop by typing exit"""
@@ -78,7 +92,7 @@ class BudgetYear:
                         self.sheet.values().get(
                             spreadsheetId=self.SPREADSHEET_ID,
                             range=f"{self.columnInUse}:{self.columnInUse}").execute().get('values', [])
-                    self.rowInColumnInUse = len(self.values_for_column_in_use) + 1
+                    self.rowInColumnInUse += 1
                     self.cellInUse = f"{self.columnInUse}{self.rowInColumnInUse}"
 
                 except HttpError as error:
