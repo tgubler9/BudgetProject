@@ -16,12 +16,10 @@ def main():
 
     objectj = budgetYear.BudgetYear()
 
-    print(len(objectj.values_for_column_in_use))
-    objectj.while_loop()
+    print(objectj.values_of_first_row)
+    
     objectj.screenshot()
-    input()
-    objectj = budgetYear.BudgetYear()
-    objectj.screenshot()
+
 
 
 

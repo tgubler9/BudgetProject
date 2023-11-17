@@ -13,6 +13,10 @@ from PIL import Image
 class BudgetYear:
     SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
     SPREADSHEET_ID = "1L4yjLKLaMQQokcvFhDzepPWEyGQhhnxnpq7VgPZB0bc"
+    MONTH = [
+        "January","February","March","April","May","June","July",
+             "August","September","October","November","December"
+     ]
 
     def __init__(self):
         credentials = None
@@ -37,13 +41,14 @@ class BudgetYear:
         self.rowInColumnInUse = len(self.values_for_column_in_use) + 1
         self.cellInUse = f"{self.columnInUse}{self.rowInColumnInUse}"
 
-
-
-
+    def getcolumn(self, dist_from_month_in_use):
+        column = chr(ord("A") + len(self.values_of_first_row) - (1+dist_from_month_in_use))
+        print(column)
+        return self.get_values(f"{column}:{column}")
 
     def get_values(self, cell_range):
         """ This is a getter method used to grab data from the google sheets."""
-        self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range=cell_range).execute().get("values", [])
+        return self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range=cell_range).execute().get("values", [])
 
     #This is a main loop for the program. It will allow you to enter or get info from the google sheets. You can also
     # the program with this as well.
@@ -99,14 +104,25 @@ class BudgetYear:
                     print(error)
 
             if choice == "exit":
+                self.screenshot()
                 break
 
     def screenshot(self):
         """This method creates a graph from the given data in the google API, takes a picture of it, and then
         sets that picture as my background."""
         month = self.values_for_column_in_use[0][0]
+        month_index = None
+        for index, months in enumerate(BudgetYear.MONTH):
+            if month == months:
+                month_index = index
+                break
+        print(month_index)
+        # Here we have this disaster of a code that gives me the last months expeneses and the current month's expenses
+        last_month_expenses = np.cumsum([float(item[0]) for item in self.getcolumn(1)[1:]])[-1]
+        print(last_month_expenses)
         list_of_expenses = [float(item[0]) for item in self.values_for_column_in_use[1:]]
         cumulative_sums = np.cumsum((list_of_expenses))
+        cumulative_sums= np.insert(cumulative_sums, 0, 0)
 
 
         fig, ax = plt.subplots()
@@ -114,8 +130,7 @@ class BudgetYear:
         fig.set_facecolor((0.06, 0.06, 0.06))
         ax.set_facecolor("black")
         ax.set_xlabel("Purchase Number", color="white")
-        ax.set_ylabel("Total Amount Spent", color="white")
-        ax.set_title("Running Total of Purchases")
+        ax.set_ylabel("Amount Spent", color="white")
         ax.tick_params(axis="both", color="gray")
         for axis in [ax.xaxis, ax.yaxis]:
             for label in axis.get_ticklabels():
@@ -125,9 +140,14 @@ class BudgetYear:
             spine.set_edgecolor("gray")
 
         final_spent = cumulative_sums[-1]  # Gets the last value of cumulative_sums
-        text_position_x = len(cumulative_sums) * 0.15  # Adjust this as needed to place the text at desired x-coordinate
-        text_position_y = max(cumulative_sums) * 1.15  # Adjust this as needed to place the text at desired y-coordinate
-        ax.text(text_position_x, text_position_y, f"You have spent ${final_spent:.2f} so far in {month} and you spent", color="white")
+        ax.set_xlim([0, len(cumulative_sums)])  # Assuming your x-axis starts at 0
+        ax.set_ylim([0, max(cumulative_sums) * 1.1])
+        text_position_x = len(cumulative_sums)* .25   # This is saying based on the maximum x value, put the text at the position of the multiplier
+        text_position_y = max(cumulative_sums) * 1.17  # This is saying based on the maximum y value, put the text at the position of the multiplier
+        ax.text(text_position_x,
+                text_position_y,
+                f"You have spent ${final_spent:.2f} so far in {month} \n In {BudgetYear.MONTH[month_index-1]} you spent ${last_month_expenses:.2f}",
+                 color="white")
 
         #Show the plot and save it as an image.
         plt.grid(True)
