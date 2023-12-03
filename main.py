@@ -14,11 +14,11 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    objectj = budgetYear.BudgetYear()
+    obj = budgetYear.BudgetYear()
 
-    print(objectj.values_of_first_row)
+
     
-    objectj.screenshot()
+
 
 
 

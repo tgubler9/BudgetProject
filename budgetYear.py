@@ -17,7 +17,7 @@ class BudgetYear:
         "January","February","March","April","May","June","July",
              "August","September","October","November","December"
      ]
-
+#If you cant log in, get rid of the token not the credentials.
     def __init__(self):
         credentials = None
         if os.path.exists("token.json"):
@@ -50,7 +50,7 @@ class BudgetYear:
         """ This is a getter method used to grab data from the google sheets."""
         return self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range=cell_range).execute().get("values", [])
 
-    #This is a main loop for the program. It will allow you to enter or get info from the google sheets. You can also
+    # This is a main loop for the program. It will allow you to enter or get info from the google sheets. You can also
     # the program with this as well.
 
     def send_value(self, amount):
@@ -69,15 +69,55 @@ class BudgetYear:
         except HttpError as error:
             print(error)
 
+    """This differs from the above method in that it can send a value to a specfied cell range rather than just getting
+    the value that occupies cell in Use."""
+    def send_value_to_range(self, amount, ranges):
+        try:
+
+            self.sheet.values().update(spreadsheetId=self.SPREADSHEET_ID, range="sheet1!" + f"{ranges}",
+                                       valueInputOption="USER_ENTERED",
+                                       body={"values": [[amount]]}).execute()
+            """If the column range is farth to the left than the current column in use, we need to 
+            set almost all of the class parameters again. If not we just need to update the column in use,
+            row in column in use, and cell in use."""
+            if ranges[0] > self.columnInUse:
+                self.values_of_first_row = self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range="1:1"
+                                                                   ).execute().get('values', [])[0]
+                self.columnInUse = chr(ord("A") + len(self.values_of_first_row) - 1)
+                self.values_for_column_in_use = self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID,
+                                                                        range=f"{self.columnInUse}:{self.columnInUse}").execute().get(
+                    'values', [])
+                self.rowInColumnInUse = len(self.values_for_column_in_use) + 1
+                self.cellInUse = f"{self.columnInUse}{self.rowInColumnInUse}"
+            else:
+                self.values_for_column_in_use = \
+                    self.sheet.values().get(
+                        spreadsheetId=self.SPREADSHEET_ID,
+                        range=f"{self.columnInUse}:{self.columnInUse}").execute().get('values', [])
+                self.rowInColumnInUse += 1
+                self.cellInUse = f"{self.columnInUse}{self.rowInColumnInUse}"
+
+        except HttpError as error:
+            print(error)
+
+    """ We need to change the column in use after updated. To start we find the new month
+     from the column in use array and our Month Static variable. We then need to use Row 
+     in use and """
+    def add_new_month(self):
+        new_month = self.MONTH[self.MONTH.index(self.values_for_column_in_use[0][0]) + 1]
+        range = f"{chr(ord(self.columnInUse) + 2)}1"
+        self.send_value_to_range(new_month, range)
+        print(self.columnInUse , " ", self.cellInUse)
+
     def while_loop(self):
         """ You can enter or see data in from the google sheets with the range. You can exit the loop by typing exit"""
         while (choice := input("Type \"get\" or \"enter\" or \"exit\" to get info, enter info, or exit.")) != "exit":
 
             if choice == "get":
-                inputrange = input("Enter in cell that you want to see or cell range.")
+                input_range = input("Enter in cell that you want to see or cell range.")
 
                 try:
-                    result = self.get_values(inputrange)
+                    result = self.get_values(input_range)
                     print("Printing result:\n", result)
                     values = result.get("values", [])
 
