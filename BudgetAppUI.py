@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit,QHBoxLayout, QPushButton, QLabel, QLineEdit
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit, QHBoxLayout, QPushButton, QLabel, QLineEdit, \
+    QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy
 import budgetYear
 
 stylesheet = """
@@ -83,46 +84,55 @@ class BudgetApp(QMainWindow):
         self.setWindowTitle("Budget App")
         self.setGeometry(100, 100, 1000, 800)  # Set window size
 
-        self.label = QLabel("Enter Expense:", self)
-        self.label.move(20, 50)
-
         # Hide the title bar
         self.setWindowFlags(Qt.FramelessWindowHint)
-
-        # Create and set the custom title bar
         self.customTitleBar = CustomTitleBar(self)
         self.setMenuWidget(self.customTitleBar)
 
+        centralWidget = QWidget(self)
+        self.setCentralWidget(centralWidget)
+        self.layout = QGridLayout(centralWidget)
+
+        self.label = QLabel("Enter Expense:", self)
+
         """Here is our textbox for our expense input"""
         self.expense_input = QLineEdit(self)
-        self.expense_input.move(150, 50)
-        self.expense_input.resize(100, 30)
+        self.expense_input.setFixedWidth(self.width()//8)
 
         """This button refreshes the background BudgetYear object incase the values need to be re-retrieved"""
         self.refresh_button = QPushButton("Refresh", self)
-        self.refresh_button.move(150, 85)
         self.refresh_button.clicked.connect(self.refresh_budget_obj)
 
         """This button sends the value in the text box to the google sheets"""
         self.expense_button = QPushButton("Add Expense", self)
-        self.expense_button.move(20, 85)
         self.expense_button.clicked.connect(self.add_expense)
 
         """This button changes the background of the computer based on the info in the google sheets"""
         self.background_change_button = QPushButton("Change background", self)
-        self.background_change_button.move(550, 100)
-        self.background_change_button.resize(160,30)
         self.background_change_button.clicked.connect(self.change_background)
 
         self.add_month_button = QPushButton("Add New Month", self)
-        self.add_month_button.move(725, 100)
-        self.add_month_button.resize(135,30)
         self.add_month_button.clicked.connect(self.add_month)
 
         # Add a text area for showing data
         self.text_area = QTextEdit(self)
-        self.text_area.move(20, 150)
-        self.text_area.resize(250, 500)
+        self.text_area.setFixedWidth(self.width() // 2)
+        self.text_area.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        right_of_text_box_spacer = QSpacerItem(20, 10, QSizePolicy.Expanding, QSizePolicy.Maximum)
+
+
+        """Here we add all the widgets to the layout"""
+
+        #row, column, rows spanned, columns spanned
+        self.layout.addWidget(self.label,                       0, 0, 1, 1)
+        self.layout.addWidget(self.expense_input,               0, 1, 1, 1)
+        self.layout.addWidget(self.expense_button,              1, 0, 1, 1)
+        self.layout.addWidget(self.text_area,                   2, 0, 1, 4)
+        #self.layout.addItem(right_of_text_box_spacer, 2, 4, 1, 4)
+        self.layout.addWidget(self.refresh_button,              0,4,1,4)
+        self.layout.addWidget(self.background_change_button,    1,4,1,2)
+        self.layout.addWidget(self.add_month_button,            1,6,1,2)
+
 
         """This is the budgetYear object which implements most of the background work"""
         self.budget_year_obj = budgetYear.BudgetYear()
