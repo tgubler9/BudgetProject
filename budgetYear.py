@@ -1,6 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+from google.oauth2 import service_account
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -20,7 +21,7 @@ class BudgetYear:
 #If you cant log in, get rid of the token not the credentials.
     def __init__(self):
         credentials = None
-        if os.path.exists("token.json"):
+        """if os.path.exists("token.json"):
             credentials = Credentials.from_authorized_user_file("token.json", self.SCOPES)
         if not credentials or not credentials.valid:
             if credentials and credentials.expired and credentials.refresh_token:
@@ -29,7 +30,13 @@ class BudgetYear:
                 flow = InstalledAppFlow.from_client_secrets_file("credentials.json", self.SCOPES)
                 credentials = flow.run_local_server(port=0)
             with open("token.json", "w") as token:
-                token.write(credentials.to_json())
+                token.write(credentials.to_json())"""
+        # Path to the service account key file
+        service_account_file = 'UniCreds.json'
+
+        # Authenticate using the service account
+        credentials = service_account.Credentials.from_service_account_file(
+            service_account_file, scopes=self.SCOPES)
 
         self.service = service = build("sheets", "v4", credentials=credentials)
         self.sheet = self.service.spreadsheets()
@@ -105,7 +112,7 @@ class BudgetYear:
      in use and """
     def add_new_month(self):
         new_month = self.MONTH[self.MONTH.index(self.values_for_column_in_use[0][0]) + 1]
-        range = f"{chr(ord(self.columnInUse) + 2)}1"
+        range = f"{chr(ord(self.columnInUse) + 1)}1"
         self.send_value_to_range(new_month, range)
         print(self.columnInUse , " ", self.cellInUse)
 
