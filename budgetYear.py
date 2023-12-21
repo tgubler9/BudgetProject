@@ -1,3 +1,4 @@
+import csv
 import os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,7 +10,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import ctypes
 from PIL import Image
-
+import pandas as pd
+from sklearn.linear_model import LinearRegression
 
 class BudgetYear:
     SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -111,10 +113,33 @@ class BudgetYear:
      from the column in use array and our Month Static variable. We then need to use Row 
      in use and """
     def add_new_month(self):
-        new_month = self.MONTH[self.MONTH.index(self.values_for_column_in_use[0][0]) + 1]
+        current_index= self.MONTH.index(self.values_for_column_in_use[0][0])
+        if current_index >= (len(self.MONTH) - 1):
+            new_month = self.MONTH[0]
+        else:
+            new_month = self.MONTH[current_index + 1]
+
         range = f"{chr(ord(self.columnInUse) + 1)}1"
         self.send_value_to_range(new_month, range)
         print(self.columnInUse , " ", self.cellInUse)
+
+
+    """We have a method here to pull the whole sheet,turn it into a csv,panda
+    df, clean it and then return the df"""
+    def get_whole_sheet(self):
+        values = self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID, range='Sheet1').execute().get(
+            'values',[])
+
+        if not values:
+            print("No Data")
+        else:
+            with open("sheet1.csv", 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(values)
+        df = pd.read_csv("sheet1.csv")
+        for column in df.columns:
+            df[column] = df[column].astype(str).str.replace(',', '').astype(float)
+        return df
 
     def while_loop(self):
         """ You can enter or see data in from the google sheets with the range. You can exit the loop by typing exit"""
@@ -163,10 +188,9 @@ class BudgetYear:
             if month == months:
                 month_index = index
                 break
-        print(month_index)
         # Here we have this disaster of a code that gives me the last months expeneses and the current month's expenses
         last_month_expenses = np.cumsum([float(item[0]) for item in self.getcolumn(1)[1:]])[-1]
-        print(last_month_expenses)
+
         list_of_expenses = [float(item[0]) for item in self.values_for_column_in_use[1:]]
         cumulative_sums = np.cumsum((list_of_expenses))
         cumulative_sums= np.insert(cumulative_sums, 0, 0)
