@@ -151,10 +151,3 @@ class BudgetApp(QMainWindow):
 
     def refresh_budget_obj(self):
         self.budget_year_obj = budgetYear.BudgetYear()
-
-if __name__ == "__main__":
-    app = QApplication([])
-    app.setStyleSheet(stylesheet)  # Apply the stylesheet to the application
-    window = BudgetApp()
-    window.show()
-    app.exec_()

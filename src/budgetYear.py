@@ -24,7 +24,9 @@ class BudgetYear:
     def __init__(self):
         credentials = None
         # Path to the service account key file
-        service_account_file = 'UniCreds.json'
+
+        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        service_account_file = os.path.join(root_dir, 'UniCreds.json')
 
         # Authenticate using the service account
         credentials = service_account.Credentials.from_service_account_file(
