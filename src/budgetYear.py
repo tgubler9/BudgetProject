@@ -23,16 +23,6 @@ class BudgetYear:
 #If you cant log in, get rid of the token not the credentials.
     def __init__(self):
         credentials = None
-        """if os.path.exists("token.json"):
-            credentials = Credentials.from_authorized_user_file("token.json", self.SCOPES)
-        if not credentials or not credentials.valid:
-            if credentials and credentials.expired and credentials.refresh_token:
-                credentials.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file("credentials.json", self.SCOPES)
-                credentials = flow.run_local_server(port=0)
-            with open("token.json", "w") as token:
-                token.write(credentials.to_json())"""
         # Path to the service account key file
         service_account_file = 'UniCreds.json'
 
@@ -230,8 +220,8 @@ class BudgetYear:
         image_path = r"C:\Users\Timot\PycharmProjects\BudgetProject\expenses_plot.png"
         resize_image_to_fit_screen(image_path, screen_width, screen_height)
 
-        screen_resolutions = [(1920, 1080), (2560, 1440),
-                              (1920, 1080)]  # Adjust these values to your monitors' resolutions
+        screen_resolutions = [(2560, 1440),
+                              (1920, 1080)]
         image_path = create_multi_monitor_wallpaper(r"C:\Users\Timot\PycharmProjects\BudgetProject\expenses_plot.png",
                                                     screen_resolutions)
 
@@ -258,7 +248,7 @@ def create_multi_monitor_wallpaper(center_image_path, screen_resolutions):
 
     # Calculate starting position for the center image
     left_width = screen_resolutions[0][0]
-    start_x = left_width + 10
+    start_x =  10
     start_y = 0
 
     # Paste the center image onto the blank image
