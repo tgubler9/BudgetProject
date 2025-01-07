@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit, QHBoxLayout, QPushButton, QLabel, QLineEdit, \
-    QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import QMainWindow, QWidget, QTextEdit, QHBoxLayout, QPushButton, QLabel, QLineEdit,\
+    QGridLayout, QSpacerItem, QSizePolicy
 import budgetYear
 
 stylesheet = """

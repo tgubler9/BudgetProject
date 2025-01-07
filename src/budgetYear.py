@@ -17,10 +17,10 @@ class BudgetYear:
     SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
     SPREADSHEET_ID = "1L4yjLKLaMQQokcvFhDzepPWEyGQhhnxnpq7VgPZB0bc"
     MONTH = [
-        "January","February","March","April","May","June","July",
-             "August","September","October","November","December"
+        "January", "February", "March", "April", "May", "June", "July",
+        "August", "September", "October", "November", "December"
      ]
-#If you cant log in, get rid of the token not the credentials.
+
     def __init__(self):
         credentials = None
         # Path to the service account key file
@@ -38,7 +38,7 @@ class BudgetYear:
                                                       ).execute().get('values', [])[0]
         self.columnInUse = chr(ord("A") + len(self.values_of_first_row) - 1)
         self.values_for_column_in_use = self.sheet.values().get(spreadsheetId=self.SPREADSHEET_ID,
-                                                range=f"{self.columnInUse}:{self.columnInUse}").execute().get('values',[])
+                                    range=f"{self.columnInUse}:{self.columnInUse}").execute().get('values', [])
         self.rowInColumnInUse = len(self.values_for_column_in_use) + 1
         self.cellInUse = f"{self.columnInUse}{self.rowInColumnInUse}"
 
@@ -184,8 +184,8 @@ class BudgetYear:
         last_month_expenses = np.cumsum([float(item[0]) for item in self.getcolumn(1)[1:]])[-1]
 
         list_of_expenses = [float(item[0]) for item in self.values_for_column_in_use[1:]]
-        cumulative_sums = np.cumsum((list_of_expenses))
-        cumulative_sums= np.insert(cumulative_sums, 0, 0)
+        cumulative_sums = np.cumsum(list_of_expenses)
+        cumulative_sums = np.insert(cumulative_sums, 0, 0)
 
 
         fig, ax = plt.subplots()
